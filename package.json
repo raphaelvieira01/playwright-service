@@ -1,9 +1,13 @@
 {
-  "name": "playwright-service",
+  "name": "n8n-scraper-login",
   "version": "1.0.0",
-  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "express": "^4.19.2",
-    "playwright": "^1.44.0"
+    "puppeteer": "^22.6.0",
+    "body-parser": "^1.20.2"
   }
 }
