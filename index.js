@@ -32,7 +32,7 @@ app.post('/scrape', async (req, res) => {
                 "--no-sandbox",
                 "--single-process",
                 "--no-zygote",
-                "--disable-dev-shm-usage", // <--- ESSA LINHA EVITA O ERRO 502
+                "--disable-dev-shm-usage",
                 "--disable-gpu",
                 "--disable-extensions"
             ],
@@ -42,18 +42,17 @@ app.post('/scrape', async (req, res) => {
 
         const page = await browser.newPage();
         
-        // Otimiza para gastar menos recurso
+        // Otimiza para gastar menos recurso (bloqueia imagens)
         await page.setRequestInterception(true);
         page.on('request', (req) => {
             if (['image', 'stylesheet', 'font'].includes(req.resourceType())) {
-                req.abort(); // Não carrega imagens nem fontes para ser rápido
+                req.abort();
             } else {
                 req.continue();
             }
         });
 
         console.log(`Navegando para: ${url}`);
-        // Aumentei o timeout para 60 segundos
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
         console.log('Página acessada. Procurando campos de login...');
@@ -73,13 +72,13 @@ app.post('/scrape', async (req, res) => {
 
         // Pega o conteúdo
         const content = await page.evaluate(() => document.body.innerText);
+        const html = await page.content(); // Pega o HTML também caso precise
         
         console.log('Sucesso! Conteúdo capturado.');
-        res.json({ success: true, data: content });
+        res.json({ success: true, text: content, html: html });
 
     } catch (error) {
         console.error('ERRO NO PUPPETEER:', error);
-        // Retorna o erro exato para o n8n
         res.status(500).json({ 
             error: 'Erro interno no navegador', 
             details: error.message 
@@ -92,4 +91,8 @@ app.post('/scrape', async (req, res) => {
     }
 });
 
-const P
+// AQUI ESTAVA O ERRO: O CÓDIGO PRECISA TERMINAR ASSIM
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+});
